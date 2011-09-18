@@ -1,4 +1,5 @@
 <?php
+	error_reporting(0);
 	$api_key = 'g2dgxhfatcspkunbb7m33zv6';
 	$make = $_REQUEST['make'];
 	$model = $_REQUEST['model'];

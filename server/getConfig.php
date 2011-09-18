@@ -1,4 +1,5 @@
 <?php
+	error_reporting(0);
 	$api_key = 'g2dgxhfatcspkunbb7m33zv6';
 	$id = $_REQUEST['styleid'];
 	$callback = '';
@@ -29,16 +30,18 @@
 				$name = $obj;
 			}
 	   	}
-		$lst = array(
-			"id"=>$id,
-			"name"=>$name,
-			"type"=>$type,
-			"cat"=>$cat
-		);
-		if ($cat == 'Color') {
-			array_push($conf['color'], $lst);
-		} else if ($cat == 'Option') {
-			array_push($conf['option'], $lst);
+		if (isset($id) && isset($name) && isset($type) && isset($cat)) {
+			$lst = array(
+				"id"=>$id,
+				"name"=>$name,
+				"type"=>$type,
+				"cat"=>$cat
+			);
+			if ($cat == 'Color') {
+				array_push($conf['color'], $lst);
+			} else if ($cat == 'Option') {
+				array_push($conf['option'], $lst);
+			}
 		}
 	}
 	

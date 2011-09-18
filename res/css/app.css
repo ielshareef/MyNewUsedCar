@@ -11,3 +11,8 @@
 .vin {
 	text-transform: uppercase;
 }
+
+.tmv {
+	margin: 0 auto;
+	font-size:32px;
+}

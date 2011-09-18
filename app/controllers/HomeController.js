@@ -256,7 +256,7 @@ Ext.regController('Home', {
 			xtype: 'spacer'
 		}, {
 			ui: 'action',
-			text: 'Get Value',
+			text: "What's My TMV!",
 			handler: function() {
 				var val = Ext.getCmp('detailForm').getValues();
 				if (!val.mileage) {
@@ -270,7 +270,7 @@ Ext.regController('Home', {
 					});
 				}
 			}
-		})
+		});
 		panel.add({
 			title: "Details",
 			xtype: "form",
@@ -280,7 +280,7 @@ Ext.regController('Home', {
 				xtype: "fieldset",
 				title: "Car Info",
 				instructions: "Please eter the information above",
-				default: {
+				defaults: {
 					labelWidth: '35%'
 				},
 				items: [{
@@ -353,7 +353,7 @@ Ext.regController('Home', {
 						}
 						panel.getComponent(0).add(colorObj);
 					}
-					if (data.color) {
+					if (data.option) {
 						var optionObj = {
 							xtype: "fieldset",
 							title: "Options",
@@ -384,5 +384,73 @@ Ext.regController('Home', {
 	},
 	tmv: function(options) {
 		console.log(options);
+		this.application.loading.show();
+		this.tmv = this.render({
+	   		xtype: 'TMV',
+	   	});
+		this.tmv.addDocked({
+			xtype: 'toolbar',
+		    title: "Your Cars Value",
+			dock: "top",
+			items: [{
+				ui: 'back',
+				text: 'Back',
+				handler: function() {
+					app.viewport.setActiveItem(5, {type: "slide", direction: "right"});
+				}
+			}]
+		});
+		var panel = this.tmv;
+		var app = this.application;
+		panel.getDockedItems()[0].add({
+			xtype: 'spacer'
+		}, {
+			ui: 'action',
+			text: "Post it!",
+			handler: function() {
+				alert('Dude! Maybe next week!');
+			}
+		})
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(function(pos) {
+				if(pos) {
+					var lat = pos.coords.latitude;
+					var lng = pos.coords.longitude;
+					var getTmv = function() {
+						var opts = options.opt.option
+						var opts_str = '';
+						for (var i=0; i < opts.length; i++) {
+							opts_str +='optionsid[]='+opts[i];
+						}
+			            Ext.util.JSONP.request({
+							url: '/MyNewUsedCar/server/getTmv.php',
+							params: {
+								id: options.opt.styleid,
+								colorid: options.opt.color,
+								cond: options.opt.condition,
+								mil: options.opt.mileage,
+								lat: lat,
+								lng: lng
+							},
+							callbackKey: 'callback',
+							callback: function(data) {
+								panel.add({
+									flex:1,
+									layout: 'hbox',
+									styleHtmlContent: true,
+									cls: 'tmv',
+									html: 'You should expect to get about <strong>$'+data.price+'</strong> for your '+app.vehicle.year+' '+app.vehicle.displayMake+ ' ' + app.vehicle.displayModel + ' ' + app.vehicle.style + ' in your zipcode of <strong>'+data.zip+'</strong>. If you want to put it up for sale, click on the button above to get the ball rolling!',
+								});
+								app.loading.hide();
+								app.viewport.setActiveItem(panel);
+							}
+						});
+					};
+					getTmv();
+				}  
+			});		
+		} else {
+			alert('WTF!');
+		}
 	}
 });

@@ -48,3 +48,11 @@ App.views.ListOfOptions = Ext.extend(Ext.Panel, {
 	items: []
 });
 Ext.reg('ListOfOptions', App.views.ListOfOptions);
+
+// List of Options view
+App.views.TMV = Ext.extend(Ext.Panel, {
+	scroll: "vertical",
+	layout: 'card',
+	items: []
+});
+Ext.reg('TMV', App.views.TMV);
