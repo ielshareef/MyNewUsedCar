@@ -1,6 +1,10 @@
 <?php
 	$api_key = 'g2dgxhfatcspkunbb7m33zv6';
 	$id = $_REQUEST['styleid'];
+	$callback = '';
+	if (isset($_REQUEST['callback'])) {
+		$callback = $_REQUEST['callback'];
+	}
 	$res = file_get_contents('http://api.edmunds.com/v1/api/vehicle/styleconfig/'.$id.'?api_key='.$api_key.'&fmt=json');
 	$arr = array();
 	$jsn = json_decode($res);
@@ -37,6 +41,11 @@
 			array_push($conf['option'], $lst);
 		}
 	}
-	var_dump($conf);
-	//echo '{"config": '.implode(', ', $arr) .'}';
+	
+	if ($callback) {
+	    header('Content-Type: text/javascript');
+	    echo $callback . '(' . json_encode($conf) . ');';
+	} else {
+	    echo json_encode($conf);
+	}
 ?>

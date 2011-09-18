@@ -40,3 +40,11 @@ App.views.ListOfStyles = Ext.extend(Ext.Panel, {
 	cardSwitchAnimation: "slide",
 });
 Ext.reg('ListOfStyles', App.views.ListOfStyles);
+
+// List of Options view
+App.views.ListOfOptions = Ext.extend(Ext.Panel, {
+	scroll: "vertical",
+	layout: 'card',
+	items: []
+});
+Ext.reg('ListOfOptions', App.views.ListOfOptions);
