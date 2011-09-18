@@ -383,7 +383,6 @@ Ext.regController('Home', {
 		//this.application.viewport.setActiveItem(this.listOfOptionsView);
 	},
 	tmv: function(options) {
-		console.log(options);
 		this.application.loading.show();
 		this.tmv = this.render({
 	   		xtype: 'TMV',
@@ -402,55 +401,124 @@ Ext.regController('Home', {
 		});
 		var panel = this.tmv;
 		var app = this.application;
+		var price, zipcode, lat, lng;
 		panel.getDockedItems()[0].add({
 			xtype: 'spacer'
 		}, {
 			ui: 'action',
 			text: "Post it!",
 			handler: function() {
-				alert('Dude! Maybe next week!');
+				//alert('Dude! Maybe next week!');
+				Ext.dispatch({
+					controller: 'Home',
+					action: "carMap",
+					historyUrl: 'home/carMap',
+					opt: options.opt,
+					tmv: price,
+					zip: zipcode,
+					lat: lat,
+					lng: lng
+				});
 			}
 		})
+		function startIt(pos) {
+			lat = pos.coords.latitude;
+			lng = pos.coords.longitude;
+			var getTmv = function() {
+				var opts = options.opt.option
+				var opts_str = '';
+				for (var i=0; i < opts.length; i++) {
+					opts_str +='optionsid[]='+opts[i];
+				}
+	            Ext.util.JSONP.request({
+					url: '/MyNewUsedCar/server/getTmv.php',
+					params: {
+						id: options.opt.styleid,
+						colorid: options.opt.color,
+						cond: options.opt.condition,
+						mil: options.opt.mileage,
+						lat: lat,
+						lng: lng
+					},
+					callbackKey: 'callback',
+					callback: function(data) {
+						price = data.price;
+						zipcode = data.zip;
+						panel.add({
+							flex:1,
+							layout: 'hbox',
+							styleHtmlContent: true,
+							cls: 'tmv',
+							html: 'You should expect to get about <strong>$'+data.price+'</strong> for your '+app.vehicle.year+' '+app.vehicle.displayMake+ ' ' + app.vehicle.displayModel + ' ' + app.vehicle.style + ' in your zipcode of <strong>'+data.zip+'</strong>. If you want to put it up for sale, click on the button above to get the ball rolling!',
+						});
+						app.loading.hide();
+						app.viewport.setActiveItem(panel);
+					}
+				});
+			};
+			getTmv();
+		}
 		if (navigator.geolocation) {
 			navigator.geolocation.getCurrentPosition(function(pos) {
 				if(pos) {
-					var lat = pos.coords.latitude;
-					var lng = pos.coords.longitude;
-					var getTmv = function() {
-						var opts = options.opt.option
-						var opts_str = '';
-						for (var i=0; i < opts.length; i++) {
-							opts_str +='optionsid[]='+opts[i];
-						}
-			            Ext.util.JSONP.request({
-							url: '/MyNewUsedCar/server/getTmv.php',
-							params: {
-								id: options.opt.styleid,
-								colorid: options.opt.color,
-								cond: options.opt.condition,
-								mil: options.opt.mileage,
-								lat: lat,
-								lng: lng
-							},
-							callbackKey: 'callback',
-							callback: function(data) {
-								panel.add({
-									flex:1,
-									layout: 'hbox',
-									styleHtmlContent: true,
-									cls: 'tmv',
-									html: 'You should expect to get about <strong>$'+data.price+'</strong> for your '+app.vehicle.year+' '+app.vehicle.displayMake+ ' ' + app.vehicle.displayModel + ' ' + app.vehicle.style + ' in your zipcode of <strong>'+data.zip+'</strong>. If you want to put it up for sale, click on the button above to get the ball rolling!',
-								});
-								app.loading.hide();
-								app.viewport.setActiveItem(panel);
-							}
-						});
-					};
-					getTmv();
-				}  
+					startIt(pos);
+				} else {
+					startIt({coords:{latitude: "34.0039", longitude: "-118.4338"}});
+				}
 			});		
 		} else {
-			alert('WTF!');
+			startIt({coords:{latitude: "34.0039", longitude: "-118.4338"}});
 		}
+	},
+	carMap: function(options) {
+		console.log(options);
+		this.carMap = this.render({
+	   		xtype: 'CarMap',
+	   	});
+		this.carMap.addDocked({
+			xtype: 'toolbar',
+		    title: "Your Online!",
+			dock: "top",
+			items: [{
+				ui: 'back',
+				text: 'Add More Cars',
+				handler: function() {
+					app.viewport.setActiveItem(0, {type: "slide", direction: "right"});
+				}
+			}]
+		});
+		var panel = this.carMap;
+		var app = this.application;
+		var marker;
+		var mapPanel = new Ext.Map({
+			title: 'Map',
+			useCurrentLocation: true,
+			mapOptions: {
+				zoom: 12
+			},
+			listeners: {
+				el: {
+			    	click: function() {
+			        	bble.setContent(app.vehicle.year+' '+app.vehicle.displayMake+' '+app.vehicle.displayModel + ' ' + app.vehicle.style + ' is for sale for <b>$'+options.tmv + '</b> or best offer. Tweet <a href="http://twitter.com/ielshareef" target="_blank">@ielshareef</a> for more info.');
+						bble.open(mapPanel.map, marker);
+			     	}
+			   	}
+			}
+		});
+		panel.add(mapPanel); 
+		var bble = new google.maps.InfoWindow();
+		var addMarker = function(opt) {
+			var latLng = new google.maps.LatLng(opt.lat, opt.lng);
+			marker = new google.maps.Marker({
+				map: mapPanel.map,
+				position: latLng
+			});
+			
+		};
+		function refresh() {
+			addMarker(options);
+		}
+		mapPanel.geo.on('update', refresh);
+		this.application.viewport.setActiveItem(this.carMap);
 	}
 });

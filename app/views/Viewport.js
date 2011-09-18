@@ -56,3 +56,10 @@ App.views.TMV = Ext.extend(Ext.Panel, {
 	items: []
 });
 Ext.reg('TMV', App.views.TMV);
+
+// List of Options view
+App.views.CarMap = Ext.extend(Ext.Panel, {
+	layout: 'card',
+	items: []
+});
+Ext.reg('CarMap', App.views.CarMap);
